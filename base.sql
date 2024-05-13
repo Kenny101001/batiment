@@ -872,8 +872,16 @@ CREATE INDEX sessions_user_id_index ON public.sessions USING btree (user_id);
 -- PostgreSQL database dump complete
 --
 
+create or replace view v_travauxprix as(
+    select travaux.id,idtype,type.nom as type,travaux.nom,unite,quantite,prixunitaire ,(prixunitaire*quantite) as total
+    from travaux
+    join type on travaux.idtype = type.id
+)
 create or replace view v_maisonType as(
-    select maison.id, maison.nom, maison.type as idtype,maison.nbchambre,maison.nbtoilette ,type.nom as type, type.dure
+    select maison.id, maison.nom, maison.type as idtype,type.nom as type,maison.nbchambre,maison.nbtoilette, type.dure, sum(v_travauxprix.total) as total
     from maison
     join type on maison.type = type.id
+    join v_travauxprix on type.id = v_travauxprix.idtype
+    group by maison.id, maison.nom, maison.type, idtype,maison.nbchambre,maison.nbtoilette ,type.nom , type.dure
+	order by total
 )

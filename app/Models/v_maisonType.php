@@ -14,5 +14,5 @@ class v_maisonType extends Model
     protected $primaryKey = 'id';
 
     // Les colonnes de la table que vous souhaitez autoriser à remplir
-    protected $fillable = [ 'id','nom', 'idtype', 'nbchambre','nbtoilette','type','dure'];
+    protected $fillable = [ 'id','nom', 'idtype', 'nbchambre','nbtoilette','type','dure','total'];
 }

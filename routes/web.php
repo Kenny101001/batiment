@@ -31,4 +31,5 @@ Route::get('/loginclient', [App\Http\Controllers\ClientController::class, 'login
 Route::get('/logoutclient', [App\Http\Controllers\ClientController::class, 'logoutclient'])->name('logoutclient');
 Route::post('/connexion', [App\Http\Controllers\ClientController::class, 'connexion'])->name('connexion');
 Route::get('/offre', [App\Http\Controllers\ClientController::class, 'offre'])->name('offre');
-
+Route::post('/DeviAjouter', [App\Http\Controllers\ClientController::class, 'DeviAjouter'])->name('DeviAjouter');
+Route::get('/projet', [App\Http\Controllers\ClientController::class, 'projet'])->name('projet');

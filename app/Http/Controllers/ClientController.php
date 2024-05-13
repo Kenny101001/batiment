@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Models\maison;
+use Carbon\Carbon;
 class ClientController extends Controller
 {
     public function index()
@@ -72,6 +73,90 @@ class ClientController extends Controller
             $finitions = DB::table('finition') ->get();
 
             return view('client.offre', compact('maisons','finitions'));
+
+        }
+    }
+
+    public function DeviAjouter()
+    {
+        $idmaison = request()->input('maisonid');
+        $finition = request()->input('finitionid');
+        $date = request()->input('date');
+
+
+        $rules = [
+            'idmaison' => 'required',
+            'finition' => 'required',
+            'date' => 'required|date|after:yesterday',
+        ];
+
+        $validator = Validator::make(compact('idmaison', 'finition', 'date'), $rules);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $maison = DB::table('v_maisontype')
+            ->where('id', $idmaison)
+            ->first();
+        $finition = DB::table('finition')
+            ->where('id', $finition)
+            ->first();
+
+        $dure = (int)($maison->dure / 24);
+
+        $date = Carbon::createFromFormat('Y-m-d', $date);
+        $fin = $date->copy()->addDays($dure);
+
+        $pourcentageCalcul = $finition->pourcentage * $maison->total / 100;
+
+        $pourcentage = $pourcentageCalcul + $maison->total;
+
+        $devi_id = DB::table('devi')->insertGetId([
+            'numclient' => Session::get('numero'),
+            'dure' => $maison->dure,
+            'debut' => $date,
+            'fin'=> $fin,
+            'restant'=> $pourcentage,
+            'total'=> $maison->total,
+            'type'=> $maison->type,
+            'maison' => (string)$maison->nom,
+            'nbchambre'=> $maison->nbchambre,
+            'nbtoilette'=>$maison->nbtoilette,
+            'finition' => $finition->nom,
+            'pourcentage' => $finition->pourcentage,
+            'totalpourcentage' => $pourcentage,
+        ]);
+
+
+        $travaux = DB::table('v_travauxprix')->where('idtype', $maison->idtype)->get();
+
+
+        foreach ($travaux as $travauxInfo) {
+            $dataToInsert[] = [
+                'iddevis' => $devi_id,
+                'idtype' => $travauxInfo->idtype,
+                'type' =>$travauxInfo->type,
+                'nom' =>$travauxInfo->nom ,
+                'unite' => $travauxInfo->unite,
+                'quantite' =>$travauxInfo->quantite ,
+                'prixunitaire' =>$travauxInfo->prixunitaire  ,
+                'total' =>$travauxInfo->total ,
+            ];
+        }
+
+        DB::table('travauxdevis')->insert($dataToInsert);
+
+        return redirect('offre');
+    }
+
+    public function projet()
+    {
+        if (!Session::has('numero')) {
+            return redirect()->route('loginclient');
+        } else {
+
+
+            return view('client.projet', compact(''));
 
         }
     }

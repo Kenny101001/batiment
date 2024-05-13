@@ -48,7 +48,6 @@ class LoginController extends Controller
 
         $type = $utilisateur->type;
         if($type == 1){
-
             Session::put('idAdmin', $utilisateur->id);
             return redirect()->route('indexAdmin');
         }
