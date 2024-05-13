@@ -4,6 +4,7 @@
 
 <div class="container">
     <div class="row">
+        <form methode="post">
         <div class="col-12">
             <h1>Choissir une offre</h1>
             @if ($errors->any())
@@ -17,30 +18,103 @@
             @endif
 
 
-            <div class="row">
-            @foreach ($maisons as $maison)
-                <div class="col-3">
-                    <div class="card text-center" style="border :none ;width: 18rem; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);">
-                        <div class="card-body" style="background-color: #FFF;" >
-                            <div class="d-flex flex-column">
-                                <h3 class="card-text">{{ $maison->nom }}</h3>
-                                <div class="d-flex">
-                                    <p class="card-text">{{ $maison->type }}</p>
-                                    <p class="card-text ms-auto">{{ $maison->nbchambre }} chambre</p>
+                <div class="row">
+                @foreach ($maisons as $maison)
+                    <div class="col-3" style="margin-bottom: 15px">
+                        <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
+                            <div class="card-body p-4">
+                                <h3 class="card-title text-center mb-0">{{ $maison->nom }}</h3>
+                                <hr style="background-color: #1A1A1A; height: 2px">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="card-text mb-0">type {{ $maison->type }}</p>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="radio-{{ $maison->id }}" name="maisonid" value="{{ $maison->id }}" style="margin-right: 10px">
+                                        <label class="form-check-label" for="radio-{{ $maison->id }}">
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="d-flex">
-                                    <p class="card-text">{{ $maison->nbtoilette }} toilettte</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="card-text mb-0">{{ $maison->nbchambre }} <i class="fa fa-bed"></i></p>
+                                    <p class="card-text mb-0">{{ $maison->nbtoilette }} <i class="fa fa-toilet"></i></p>
                                 </div>
                             </div>
-                            <a href="" class="btn btn-primary">Réserver</a>
+                        </div>
+                    </div>
+                @endforeach
+
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+            <div class="col-12">
+                <h1>Choissir la finition</h1>
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+
+                <div class="row">
+                @foreach ($finitions as $finition)
+                    <div class="col-3" style="margin-bottom: 15px">
+                        <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
+                            <div class="card-body p-4">
+                                <h3 class="card-title text-center mb-0">{{ $finition->nom }}</h3>
+                                <hr style="background-color: #1A1A1A; height: 2px">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="card-text mb-0">pourcentage supplémentaire : {{ $finition->pourcentage }}%</p>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="radio-{{ $finition->id }}" name="finitionid" value="{{ $finition->id }}" style="margin-right: 10px">
+                                        <label class="form-check-label" for="radio-{{ $finition->id }}">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                </div>
+
+                <div class="row">
+                    <div class="col-3" style="margin-bottom: 15px">
+                        <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
+                            <div class="card-body p-4">
+                                <div class="mt-3">
+                                    <label class="form-label">Date de début des travaux</label>
+                                    <input type="date" class="form-control" name="date" required>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            @endforeach
+
+                <div class="row">
+                    <div class="col-3" style="margin-bottom: 15px">
+                        <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
+                            <div class="card-body p-4">
+                                <div class="mt-3">
+                                    <label  class="form-label">Date de début des travaux</label>
+                                    <input type="number" class="form-control"  required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>
-    </div>
+        <div class="d-flex justify-content-center mt-4">
+            <button type="submit" class="btn btn-primary" style="border-radius: 10px; font-weight: bold; padding: 10px 20px; width: 100%;">Valider</button>
+        </div>
+    <form>
 </div>
 
 @endsection

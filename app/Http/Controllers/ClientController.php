@@ -68,12 +68,10 @@ class ClientController extends Controller
             return redirect()->route('loginclient');
         } else {
 
-            $maisons = DB::table('maison')
-                ->join('type', 'maison.type', '=', 'type.id')
-                ->select('maison.*','type.id','type.nom','type.dure')
-                ->get();
+            $maisons = DB::table('v_maisontype') ->get();
+            $finitions = DB::table('finition') ->get();
 
-            return view('client.offre', compact('maisons'));
+            return view('client.offre', compact('maisons','finitions'));
 
         }
     }

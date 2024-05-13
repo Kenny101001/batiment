@@ -872,4 +872,8 @@ CREATE INDEX sessions_user_id_index ON public.sessions USING btree (user_id);
 -- PostgreSQL database dump complete
 --
 
-create or replace view 
+create or replace view v_maisonType as(
+    select maison.id, maison.nom, maison.type as idtype,maison.nbchambre,maison.nbtoilette ,type.nom as type, type.dure
+    from maison
+    join type on maison.type = type.id
+)
