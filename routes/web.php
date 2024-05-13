@@ -34,4 +34,4 @@ Route::get('/offre', [App\Http\Controllers\ClientController::class, 'offre'])->n
 Route::post('/DeviAjouter', [App\Http\Controllers\ClientController::class, 'DeviAjouter'])->name('DeviAjouter');
 Route::get('/projet', [App\Http\Controllers\ClientController::class, 'projet'])->name('projet');
 Route::get('/detailprojet', [App\Http\Controllers\ClientController::class, 'detailprojet'])->name('detailprojet');
-
+Route::get('/telechargerpdf', [App\Http\Controllers\ClientController::class, 'telechargerpdf'])->name('telechargerpdf');

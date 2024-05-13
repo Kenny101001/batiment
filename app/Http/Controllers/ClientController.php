@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Models\maison;
 use Carbon\Carbon;
+
+use Dompdf\Dompdf;
+use Dompdf\Options;
 class ClientController extends Controller
 {
     public function index()
@@ -166,12 +169,49 @@ class ClientController extends Controller
         if (!Session::has('numero')) {
             return redirect()->route('loginclient');
         } else {
+
             $iddevis = request()->input('iddevis');
-            
+
             $projetsdetails = DB::table('travauxdevis')->where('iddevis',$iddevis )->get();
-            $projets = DB::table('devi')->where('id',request()->input('iddevis') )->get();
+            $projets = DB::table('devi')->where('id',request()->input('iddevis') )->first();
 
             return view('client.projetdetail', compact('projets','projetsdetails'));
+
+        }
+    }
+    public function telechargerpdf()
+    {
+        if (!Session::has('numero')) {
+            return redirect()->route('loginclient');
+        } else {
+
+            $iddevis = request()->input('iddevis');
+
+            $projetsdetails = DB::table('travauxdevis')->where('iddevis',$iddevis )->get();
+            $projets = DB::table('devi')->where('id',request()->input('iddevis') )->first();
+
+
+            $options = new Options();
+            $options->set('defaultFont', 'Helvetica');
+
+            $dompdf = new Dompdf($options);
+
+            // HTML pour le contenu du PDF
+            $html = '<h4>Screen '. $idsalle.'</h4>';
+            $html .= '<div>
+                        Row : '. $letter .' seat : '. $number. ' time : '. $heure . ' date : '. $date .
+                    '</div>';
+            $html .= '<h4>prix'. $prix.'</h4>';
+
+            $dompdf->loadHtml($html);
+
+            // Rendu du document PDF
+            $dompdf->render();
+
+            // Téléchargement du document PDF
+            $dompdf->stream('informations.pdf');
+
+            return redirect('detailprojet');
 
         }
     }
