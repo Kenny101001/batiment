@@ -23,6 +23,28 @@
             <div class="col-12" style="margin-bottom: 15px">
                 <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
                     <div class="card-body p-4">
+
+                        <form action="{{route('versement')}}" method="post">
+                            @csrf
+                            <div class="mt-3">
+                                <label  class="form-label">Versement</label>
+                                <br>
+                                <small>reste : {{$projets->restant}} Ar</small>
+                                <input min="1" max="{{$projets->restant}}" type="number" name="versement" class="form-control text-right focus:ring-[#FF2D20] focus:border-[#FF2D20] rounded-sm border-[#FF2D20] border-b-2 p-1"  required style="caret-color: #FF2D20;-moz-appearance:textfield;">
+                            </div>
+                            <div class="mt-3">
+                            <label  class="form-label">Date</label>
+                                <input type="date" class="form-control" name="dateVersement" required>
+                            </div>
+                            <div class="mt-3">
+
+                            <input type="hidden" name="iddevis" value="{{$projets->id}}">
+                                <button type="submit" style="border:none">
+                                <a  class="btn btn-primary py-3 px-5" style="display: inline-block;">validez</a>
+                                </button>
+                            </div>
+                        </form>
+
                         <div class="mt-3">
 
                             <h5>debut : {{$projets->debut}} -> fin {{$projets->fin}}</h5>

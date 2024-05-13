@@ -62,7 +62,7 @@ class ClientController extends Controller
                 Session::put('numero', $numero);
 
         }
-        return redirect('index');
+        return redirect('indexClient');
 
         }
     }
@@ -128,6 +128,7 @@ class ClientController extends Controller
             'finition' => $finition->nom,
             'pourcentage' => $finition->pourcentage,
             'totalpourcentage' => $pourcentage,
+            'creation' => now(),
         ]);
 
 
@@ -179,6 +180,43 @@ class ClientController extends Controller
 
         }
     }
+
+    public function versement()
+    {
+        if (!Session::has('numero')) {
+            return redirect()->route('loginclient');
+        } else {
+
+            $iddevis = request()->input('iddevis');
+            $date = request()->input('dateVersement');
+            $versement = request()->input('versement');
+
+            $devi = DB::table('devi')->where('id', $iddevis)->first();
+
+            $newpayer = $devi->payer + $versement;
+            $newreste = $devi->restant - $versement;
+
+
+            DB::table('histoversement')->insert([
+                'iddevis' => $iddevis,
+                'versement' => $versement,
+                'reste' => $newreste,
+                'total' => $devi->totalpourcentage,
+                'date' => $date,
+                'ancienreste' => $devi->restant,
+                'ancienpayer' => $devi->payer,
+
+            ]);
+
+            DB::table('devi')
+            ->where('id', $iddevis)
+            ->update(['payer' => $newpayer, 'restant' => $newreste]);
+
+            return redirect('projet');
+
+        }
+    }
+
     public function telechargerpdf()
     {
         if (!Session::has('numero')) {
@@ -197,11 +235,56 @@ class ClientController extends Controller
             $dompdf = new Dompdf($options);
 
             // HTML pour le contenu du PDF
-            $html = '<h4>Screen '. $idsalle.'</h4>';
-            $html .= '<div>
-                        Row : '. $letter .' seat : '. $number. ' time : '. $heure . ' date : '. $date .
-                    '</div>';
-            $html .= '<h4>prix'. $prix.'</h4>';
+            $html = '<style>
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+
+                        table, th, td {
+                            border: 1px solid black;
+                        }
+
+                        th, td {
+                            padding: 5px;
+                        }
+                    </style>';
+            $html .= '<h4>Informations du projet</h4>';
+            $html .= '<div style="border:1px solid black; padding:5px;">
+                        numclient : '. $projets->numclient .'<br>
+                        Nom du projet : '. $projets->maison .'<br>
+                        Date de début : '. $projets->debut .'<br>
+                        Date de fin : '. $projets->fin .'<br>
+                        finition : '. $projets->finition .'<br>
+                        nombre de chambre : '. $projets->nbchambre .'<br>
+                        nombre de toilette : '. $projets->nbtoilette .'<br>
+                    </div>';
+            $html .= '<h4>Liste des travaux</h4>';
+            $html .= '<table style="border:1px solid black; border-collapse:collapse; width:100%;">';
+            $html .= '<thead style="border:1px solid black;">
+                        <tr>
+                            <th style="border:1px solid black; padding:5px;">Idtype</th>
+                            <th style="border:1px solid black; padding:5px;">Type</th>
+                            <th style="border:1px solid black; padding:5px;">Nom</th>
+                            <th style="border:1px solid black; padding:5px;">Unite</th>
+                            <th style="border:1px solid black; padding:5px;">quantite</th>
+                            <th style="border:1px solid black; padding:5px;">prixunitaire</th>
+                            <th style="border:1px solid black; padding:5px;">total</th>
+                        </tr>
+                    </thead>';
+            $html .= '<tbody>';
+            foreach ($projetsdetails as $travaux){
+                $html .= '<tr style="border:1px solid black;">
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->idtype .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->type .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->nom .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->unite .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->quantite .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->prixunitaire .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $travaux->total .'</td>
+                        </tr>';
+            }
+            $html .= '</tbody></table>';
 
             $dompdf->loadHtml($html);
 
@@ -209,7 +292,7 @@ class ClientController extends Controller
             $dompdf->render();
 
             // Téléchargement du document PDF
-            $dompdf->stream('informations.pdf');
+            $dompdf->stream('devis.pdf');
 
             return redirect('detailprojet');
 

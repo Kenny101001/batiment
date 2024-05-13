@@ -94,7 +94,7 @@
                 </div>
               @endif
 
-              <form id="formAuthentication" class="mb-3" action="{{ route('loginVerif') }}" method="POST">
+              <form  class="mb-3" action="{{ route('loginVerify') }}" method="get">
                 @csrf
                 <div class="mb-3">
                   <label for="email" class="form-label">Email</label>
@@ -137,6 +137,7 @@
                 <div class="mb-3">
                   <button class="btn btn-primary d-grid w-100" type="submit">Se connecter</button>
                 </div>
+
               </form>
 
               <p class="text-center">
@@ -180,6 +181,5 @@
     <!-- Page JS -->
 
     <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
   </body>
 </html>

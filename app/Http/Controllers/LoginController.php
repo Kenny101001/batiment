@@ -29,7 +29,7 @@ class LoginController extends Controller
         return view('login');
     }
 
-    public function loginVerif()
+    public function loginVerify()
     {
         $email = request()->input('email');
         $mdp = request()->input("mdp");
@@ -44,17 +44,16 @@ class LoginController extends Controller
             return back()->withErrors(['email' => 'Ce mot de passe est incorrect'])->withInput();
         }
 
-        $utilisateur = DB::table('utilisateur')->where('email', $email)->where('mdp', $mdp)->first();
+        $verif = DB::table('utilisateur')->where('email', $email)->where('mdp', $mdp)->first();
 
-        $type = $utilisateur->type;
-        if($type == 1){
-            Session::put('idAdmin', $utilisateur->id);
+        $type = $verif->type;
+        if($type == '1'){
+            Session::put('idAdmin', $verif->id);
             return redirect()->route('indexAdmin');
         }
         else{
-            return back()->withErrors(['email' => 'Ce compte n\'est pas encore validé par un administrateur'])->withInput();
+            return back()->withErrors(['email' => 'Ce compte est invalide'])->withInput();
         }
-
     }
 
     public function mdp()

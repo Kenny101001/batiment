@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('choix');
@@ -13,7 +14,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/choix', [App\Http\Controllers\loginController::class, 'choix'])->name('choix');
 Route::get('/login', [App\Http\Controllers\loginController::class, 'login'])->name('login');
 Route::get('/logout', [App\Http\Controllers\loginController::class, 'logout'])->name('logout');
-Route::post('/loginVerif', [App\Http\Controllers\loginController::class, 'loginVerif'])->name('loginVerif');
+Route::get('/loginVerify', [App\Http\Controllers\loginController::class, 'loginVerify'])->name('loginVerify');
 
 Route::get('/mdp', [App\Http\Controllers\loginController::class, 'mdp'])->name('mdp');
 Route::post('/mdpUpdate', [App\Http\Controllers\loginController::class, 'mdpUpdate'])->name('mdpUpdate');
@@ -25,6 +26,9 @@ Route::post('/validerformulaire', [App\Http\Controllers\LoginController::class, 
 
 
 Route::get('/indexAdmin', [App\Http\Controllers\AdminController::class, 'index'])->name('indexAdmin');
+Route::get('/detailprojetAdmin', [App\Http\Controllers\AdminController::class, 'detailprojetAdmin'])->name('detailprojetAdmin');
+Route::get('/telechargerpdfAdmin', [App\Http\Controllers\AdminController::class, 'telechargerpdfAdmin'])->name('telechargerpdfAdmin');
+Route::get('/reinitialiserBase', [App\Http\Controllers\AdminController::class, 'reinitialiserBase'])->name('reinitialiserBase');
 
 Route::get('/indexClient', [App\Http\Controllers\ClientController::class, 'index'])->name('indexClient');
 Route::get('/loginclient', [App\Http\Controllers\ClientController::class, 'loginclient'])->name('loginclient');
@@ -35,3 +39,4 @@ Route::post('/DeviAjouter', [App\Http\Controllers\ClientController::class, 'Devi
 Route::get('/projet', [App\Http\Controllers\ClientController::class, 'projet'])->name('projet');
 Route::get('/detailprojet', [App\Http\Controllers\ClientController::class, 'detailprojet'])->name('detailprojet');
 Route::get('/telechargerpdf', [App\Http\Controllers\ClientController::class, 'telechargerpdf'])->name('telechargerpdf');
+Route::post('/versement', [App\Http\Controllers\ClientController::class, 'versement'])->name('versement');

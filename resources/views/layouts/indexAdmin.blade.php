@@ -26,6 +26,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Admin</title>
 
@@ -64,6 +65,7 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="admin/assets/js/config.js"></script>
   </head>
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
 
   <body>
     <!-- Layout wrapper -->
@@ -89,7 +91,7 @@
           <ul class="menu-inner py-1">
             <!-- Dashboard -->
             <li class="menu-item active">
-              <a href="index.html" class="menu-link">
+              <a href="{{route('indexAdmin')}}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                 <div data-i18n="Analytics">Dashboard</div>
               </a>
@@ -109,11 +111,23 @@
             <li class="menu-item">
               <a
                 href="{{route('logout')}}"
-                
+
                 class="menu-link"
               >
                 <i class="menu-icon tf-icons bx bx-file"></i>
                 <div data-i18n="Documentation">Deconnexion</div>
+            </a>
+            </li>
+
+            <li class="menu-item">
+              <a
+                href="{{route('reinitialiserBase')}}"
+                onclick="return confirm('Etes-vous sûr de vouloir réinitialiser la base de données ? Cette opération est irréversible.')"
+
+                class="menu-link text-danger"
+              >
+                <i class="menu-icon tf-icons bx bx-file text-danger"></i>
+                <div class="text-danger" data-i18n="Documentation">Réinitialiser la base</div>
             </a>
             </li>
 
@@ -230,8 +244,6 @@
 
           <!-- / Navbar -->
 
-          <!-- Content wrapper -->
-          <div class="content-wrapper">
             <!-- Content -->
 
             @yield('content')

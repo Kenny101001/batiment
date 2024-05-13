@@ -85,20 +85,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <div class="col-12" style="margin-bottom: 15px">
-                <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
-                    <div class="card-body p-4">
-                        <div class="mt-3">
-                            <label  class="form-label">Versement</label>
-                            <input type="number" name="versement" class="form-control text-right focus:ring-[#FF2D20] focus:border-[#FF2D20] rounded-sm border-[#FF2D20] border-b-2 p-1"  required style="caret-color: #FF2D20;-moz-appearance:textfield;">
-                        </div>
-                        <div class="mt-3">
-                            <label  class="form-label">Date</label>
-                            <input type="date" class="form-control" name="dateVersement" required>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
         </div>
     </div>
     <div class="row">
