@@ -111,7 +111,7 @@
           <a href="about.html" class="nav-item nav-link">About Us</a>
           <a href="service.html" class="nav-item nav-link">Our Services</a>
           <a href="contact.html" class="nav-item nav-link">Contact Us</a>
-          <a href="{{route('logoutclient')}}" class="nav-item nav-link">Connexion</a>
+          <a href="{{route('loginclient')}}" class="nav-item nav-link">Connexion</a>
           <a href="{{route('logoutclient')}}" class="nav-item nav-link">Deconnexion</a>
         </div>
       </div>

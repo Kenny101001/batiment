@@ -16,20 +16,11 @@ class LoginController extends Controller
         Session::flush();
         return view('choix');
     }
-    public function loginclient()
-    {
-        return view('loginClient');
-    }
 
     public function login()
     {
         Session::flush();
         return view('login');
-    }
-    public function logoutclient()
-    {
-        Session::flush();
-        return view('choix');
     }
 
     public function logout()

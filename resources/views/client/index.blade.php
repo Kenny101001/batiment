@@ -31,7 +31,7 @@
                         Industrial
                       </li>
                     </ol>
-                    <a href="" class="btn btn-primary py-3 px-5"
+                    <a href="{{route('offre')}}" class="btn btn-primary py-3 px-5"
                       >Choisir une maison</a
                     >
                   </div>
