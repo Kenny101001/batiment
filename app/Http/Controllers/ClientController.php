@@ -155,8 +155,8 @@ class ClientController extends Controller
             return redirect()->route('loginclient');
         } else {
 
-
-            return view('client.projet', compact(''));
+            $projets = DB::table('devi')->where('numclient', Session::get('numero'))->get();
+            return view('client.projet', compact('projets'));
 
         }
     }

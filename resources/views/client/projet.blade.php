@@ -5,7 +5,7 @@
 <div class="container">
     <div class="row">
         <div class="col-6">
-            <h1>Se connecter</h1>
+            <h1>Mes projets</h1>
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul>
@@ -15,25 +15,35 @@
                     </ul>
                 </div>
             @endif
-            <form action="{{route('connexion')}}" method="post" enctype="multipart/form-data">
-                @csrf
-                <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">numéro</label>
-                    <input type="texte" class="form-control" name="numero" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Entré votre numéro de téléphone" value="{{ old('numero') }}">
-                </div>
-                <div class="mb-3">
 
+            @foreach ($projets as $projet)
+            <div class="row">
+                <div class="col-6">
+                    <div class="col-9" style="margin-bottom: 15px">
+                        <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
+                            <div class="card-body p-4">
+                                <div class="mt-3">
+                                    <h4>{{ $projet->maison}}</h4>
+                                    <h5>Finition {{ $projet->finition}}</h5>
+                                    <br>
+                                    <span>{{ $projet->nbchambre}} chambres / {{ $projet->nbtoilette}} toilettes</span>
+                                    <br>
+                                    <span>duré : {{ $projet->dure /24}} jours </span>
+                                    <br>
+                                    <span>Début : {{ $projet->debut}} -> Fin : {{ $projet->fin}}</span>
+                                    <br>
+                                    <span>Total : {{ $projet->totalpourcentage}}</span>
+                                    <br>
+                                    <span>Payer : {{ $projet->payer }}</span>
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <button name="action" value="connexion" type="submit" class="btn btn-primary">se connecter</button>
-                <br>
-                <br>
-                pas encore de compte ?
-                <br>
-                <button name="action" value="inscription" type="submit" class="btn btn-primary">s'inscription</button>
-            </form>
-        </div>
-        <div class="col-6">
-            <img src="client/img/carousel-2.jpg" alt="" class="img-fluid">
+            </div>
+            @endforeach
         </div>
     </div>
 </div>
