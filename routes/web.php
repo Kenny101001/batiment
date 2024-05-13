@@ -33,3 +33,5 @@ Route::post('/connexion', [App\Http\Controllers\ClientController::class, 'connex
 Route::get('/offre', [App\Http\Controllers\ClientController::class, 'offre'])->name('offre');
 Route::post('/DeviAjouter', [App\Http\Controllers\ClientController::class, 'DeviAjouter'])->name('DeviAjouter');
 Route::get('/projet', [App\Http\Controllers\ClientController::class, 'projet'])->name('projet');
+Route::get('/detailprojet', [App\Http\Controllers\ClientController::class, 'detailprojet'])->name('detailprojet');
+

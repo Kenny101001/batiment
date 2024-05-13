@@ -160,4 +160,19 @@ class ClientController extends Controller
 
         }
     }
+
+    public function detailprojet()
+    {
+        if (!Session::has('numero')) {
+            return redirect()->route('loginclient');
+        } else {
+            $iddevis = request()->input('iddevis');
+            
+            $projetsdetails = DB::table('travauxdevis')->where('iddevis',$iddevis )->get();
+            $projets = DB::table('devi')->where('id',request()->input('iddevis') )->get();
+
+            return view('client.projetdetail', compact('projets','projetsdetails'));
+
+        }
+    }
 }
