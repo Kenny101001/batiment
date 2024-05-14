@@ -74,8 +74,9 @@ class ClientController extends Controller
 
             $maisons = DB::table('v_maisontype') ->get();
             $finitions = DB::table('finition') ->get();
+            $lieux = DB::table('lieu') ->get();
 
-            return view('client.offre', compact('maisons','finitions'));
+            return view('client.offre', compact('maisons','finitions','lieux'));
 
         }
     }
@@ -85,7 +86,7 @@ class ClientController extends Controller
         $idmaison = request()->input('maisonid');
         $finition = request()->input('finitionid');
         $date = request()->input('date');
-
+        $lieu = request()->input('lieu');
 
         $rules = [
             'idmaison' => 'required',
@@ -115,7 +116,6 @@ class ClientController extends Controller
         $pourcentage = $pourcentageCalcul + $maison->total;
 
         $devi_id = DB::table('devi')->insertGetId([
-            'numclient' => Session::get('numero'),
             'dure' => $maison->dure,
             'debut' => $date,
             'fin'=> $fin,
@@ -128,6 +128,8 @@ class ClientController extends Controller
             'totalpourcentage' => $pourcentage,
             'creation' => now(),
             'description'=> $maison->description,
+            'lieu' => $lieu,
+            'numclient' => Session::get('numero'),
         ]);
 
 

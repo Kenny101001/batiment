@@ -296,13 +296,28 @@ class AdminController extends Controller
 
     public function ImportationCsvMaisonDevis()
     {
-        if (empty(request()->file('file'))) {
+        if (empty(request()->file('maisonTravaux'))) {
             // Retourne une erreur ou arrête le processus
-            return redirect()->back()->withErrors(['quantite' => 'il ny a pas de fichier csv']);
+            return redirect()->back()->withErrors(['maison' => 'il ny a pas de fichier csv dans la maison et travaux']);
+        }
+
+        if (empty(request()->file('Devis'))) {
+            // Retourne une erreur ou arrête le processus
+            return redirect()->back()->withErrors(['devis' => 'il ny a pas de fichier csv dans le devis']);
         }
 
         $maisonTravaux = request()->file('maisonTravaux');
         $Devis = request()->file('Devis');
+
+        $extensionA = $maisonTravaux->getClientOriginalExtension();
+            if($extensionA != 'csv'){
+                return redirect()->back()->withErrors(['maison' => 'le fichier csv n\'est pas au bon format']);
+            }
+
+        $extensionB = $Devis->getClientOriginalExtension();
+            if($extensionB != 'csv'){
+                return redirect()->back()->withErrors(['maison' => 'le fichier csv n\'est pas au bon format']);
+            }
 
         $maisonTravauxContents = file($maisonTravaux->getPathname());
 
@@ -314,77 +329,152 @@ class AdminController extends Controller
             if ($rowA == 1) {
                 continue;
             }
-            $data = str_getcsv($lineA);
+            $dataA = str_getcsv($lineA, ",");
 
             // $dateDevis = Carbon::createFromFormat('d/m/Y', $data[6])->format('Y-m-d');
             // $dateDebut = Carbon::createFromFormat('d/m/Y', $data[7])->format('Y-m-d');
 
 
-            if (count($data) != 8) {
-                return redirect()->back()->withErrors(['ligne' => "La ligne $rowA n'a pas 8 champs, vérifiez votre fichier csv"]);
-            }
-            if (!is_numeric($data[2])) {
-                return redirect()->back()->withErrors(['surface' => "La ligne $rowA, le champs surface n'est pas un nombre"]);
-            }
-            if (!is_numeric($data[6])) {
-                return redirect()->back()->withErrors(['prix' => "La ligne $rowA, le champs prix n'est pas un nombre"]);
-            }
-            if (!is_numeric($data[7])) {
-                return redirect()->back()->withErrors(['quantite' => "La ligne $rowA, le champs quantité n'est pas un nombre"]);
-            }
+            // if (!is_numeric($dataA[2])) {
+            //     return redirect()->back()->withErrors(['surface' => "La ligne $rowA, le champs surface n'est pas un nombre"]);
+            // }
+            // if (!is_numeric($dataA[6])) {
+            //     return redirect()->back()->withErrors(['prix' => "La ligne $rowA, le champs prix n'est pas un nombre"]);
+            // }
+            // if (!is_numeric($dataA[7])) {
+            //     return redirect()->back()->withErrors(['quantite' => "La ligne $rowA, le champs quantité n'est pas un nombre"]);
+            // }
+
+            $dataA[2] = str_replace(',', '.', $dataA[2]); // surface
+            $dataA[5] = str_replace(',', '.', $dataA[5]); // prix_unitaire
+            $dataA[6] = str_replace(',', '.', $dataA[6]); // quantite
+            $dataA[7] = str_replace(',', '.', $dataA[7]); // duree_travaux
 
             $dataToInsertA[] =[
-                'type_maison' =>$data[0],
-                'description' => $data[1],
-                'surface' => $data[2],
-                'code_travaux' => $data[3],
-                'type_travaux' => $data[4],
-                'unite' => $data[5],
-                'prix_unitaire' => $data[6],
-                'quantite' => $data[7],
-                'duree_travaux' => $data[8],
+                'type_maison' =>$dataA[0],
+                'description' => $dataA[1],
+                'surface' => $dataA[2],
+                'code_travaux' => $dataA[3],
+                'unite' => $dataA[5],
+                'prix_unitaire' => $dataA[6],
+                'quantite' => $dataA[7],
+                'duree_travaux' => $dataA[8],
+                'type_travaux' => $dataA[4],
             ];
         }
 
         $DevisContents = file($Devis->getPathname());
         $rowB = 0;
-        foreach ($maisonTravauxContents as $lineA) {
+        foreach ($DevisContents as $lineB) {
 
             $rowB++;
 
             if ($rowB == 1) {
                 continue;
             }
-            $data = str_getcsv($lineA);
+            $dataB = str_getcsv($lineB);
 
-            $dateDevis = Carbon::createFromFormat('d/m/Y', $data[6])->format('Y-m-d');
-            $dateDebut = Carbon::createFromFormat('d/m/Y', $data[7])->format('Y-m-d');
+            $dateDevis = Carbon::createFromFormat('d/m/Y', $dataB[5])->format('Y-m-d');
+            $dateDebut = Carbon::createFromFormat('d/m/Y', $dataB[6])->format('Y-m-d');
 
-
-            $dataToInsertA[] =[
-                'client' =>$data[0],
-                'ref_devis' => $data[1],
-                'type_maison' => $data[2],
-                'finition' => $data[3],
-                'taux_finition' => $data[4],
-                'date_devis' => $data[5],
-                'date_debut' => $data[6],
-                'lieux' => $data[7],
+            $dataToInsertB[] =[
+                'client' =>$dataB[0],
+                'ref_devis' => $dataB[1],
+                'finition' => $dataB[3],
+                'taux_finition' => $dataB[4],
+                'date_devis' => $dateDevis,
+                'date_debut' => $dateDebut,
+                'lieu' => $dataB[7],
+                'type_maison' => $dataB[2],
             ];
         }
 
-        DB::table('seance')->insert($dataToInsertA);
+        DB::table('maisonimportationcsv')->insert($dataToInsertA);
 
-        DB::statement("INSERT INTO categorie(nom) SELECT categorie FROM seance WHERE categorie NOT IN (SELECT nom FROM categorie) GROUP BY categorie");
+        DB::table('devisimportationcsv')->insert($dataToInsertB);
 
-        DB::statement("INSERT INTO salle(salle) SELECT salle FROM seance WHERE salle NOT IN (SELECT salle FROM salle) GROUP BY salle");
+         //maison Import
+        $idmaison = DB::select("INSERT INTO maison(nom, description, dure, surface)
+        SELECT type_maison, description, duree_travaux, surface
+        FROM maisonimportationcsv
+        WHERE type_maison NOT IN (SELECT nom FROM maison)
+        GROUP BY type_maison, type_maison, description, duree_travaux, surface
+        RETURNING id");
 
-        DB::statement("INSERT INTO film(nom, idcategorie) SELECT film, categorie.id FROM seance INNER JOIN categorie ON categorie.nom = seance.categorie WHERE film NOT IN (SELECT nom FROM film) GROUP BY film , categorie.id ");
+         //travaux Import
+        $idtravaux = DB::select("INSERT INTO travaux(nom, unite, prixunitaire, codetravaux)
+        SELECT type_travaux, unite, prix_unitaire, code_travaux
+        FROM maisonimportationcsv
+        WHERE type_travaux NOT IN (SELECT type_travaux FROM travaux)
+        GROUP BY type_travaux, unite, prix_unitaire, code_travaux
+        RETURNING id");
 
-        DB::statement("INSERT INTO seancefilm(idfilm, idcategorie, idsalle, date, heure) SELECT film.id, categorie.id, salle.id, date, heure FROM seance INNER JOIN film ON film.nom = seance.film INNER JOIN categorie ON categorie.nom = seance.categorie INNER JOIN salle ON salle.salle = seance.salle");
+        //devis Import
+        $iddevis = DB::select("INSERT INTO devi(numclient, debut, maison, finition, pourcentage, creation, lieu, refdevis)
+        SELECT client, date_debut, type_maison, finition,
+            CAST(REPLACE(SUBSTRING(taux_finition, 0, LENGTH(taux_finition)-1), ',', '.') AS numeric(5,2)) AS pourcentage_creation,
+            date_devis, lieu, ref_devis
+        FROM devisimportationcsv
+        WHERE ref_devis NOT IN (SELECT refdevis FROM devi)
+        GROUP BY ref_devis, client, date_debut, type_maison, finition, date_devis, taux_finition, lieu
+        RETURNING id");
 
+        for($i = 0; $i < count($iddevis); $i++){
 
-        return redirect('typeFinition');
+            $iddeviss = $iddevis[$i]->id;
+
+            //  dd($iddeviss);
+            $id = DB::table('devi')->where('id', $iddeviss)->first(); // Use first() instead of get()
+            $iddevisref = $id->refdevis;
+
+            $devisimportationcsv = DB::table('devisimportationcsv')->where('ref_devis', $iddevisref)->first();
+
+            $maisonimportationcsv = DB::table('maisonimportationcsv')->where('type_maison', $devisimportationcsv->type_maison)->get();
+
+            $paiementimportationcsv = DB::table('paiementimportationcsv')->where('ref_devis', $iddevisref)->get();
+
+            $dure = (int)($maisonimportationcsv[0]->duree_travaux);
+
+            $date = Carbon::createFromFormat('Y-m-d', $devisimportationcsv->date_debut);
+            $fin = $date->copy()->addDays($dure);
+
+            $payement = 0;
+            foreach ($paiementimportationcsv as $paiementimportationcsvs) {
+                $payement += $paiementimportationcsvs->montant;
+            }
+
+            $total = 0;
+            foreach ($maisonimportationcsv as $maisonimportationcsvs) {
+                $total += ($maisonimportationcsvs->prix_unitaire * $maisonimportationcsvs->quantite);
+            }
+
+            $reste = $total - $payement;
+
+            $type = $devisimportationcsv->type_maison;
+
+            $pourcentageCalcul = $id->pourcentage * $total / 100;
+
+            $totalpourcentage = $pourcentageCalcul + $total;
+
+            $description = $maisonimportationcsv[0]->description;
+
+            // dd($iddevisref);
+            DB::table('devi')->where('refdevis', $iddevisref)->update([ 'dure' => $dure,'fin' => $fin,'payer' => $payement, 'total' => $total, 'restant' => $reste, 'description' => $description, 'type' => $type , 'totalpourcentage' => $totalpourcentage]);
+    
+
+        }
+        
+        // $idtravauxMaison= DB::select("INSERT INTO travauxmaison(idmaison, idtravaux, quantite)
+        //     SELECT type_travaux, unite, prixunitaire, code_travaux
+        //     FROM maisonimportationcsv
+        //     join devisimportationcsv on maisonimportationcsv.type_maison = devisimportationcsv.type_maison
+        //     join travaux on maisonimportationcsv.code_travaux = travaux.codetravaux
+        //     WHERE type_travaux NOT IN (SELECT type_travaux FROM travaux)
+        //     GROUP BY type_travaux, unite, prixunitaire, code_travaux
+        //     RETURNING id");
+                
+
+        return redirect('pageCsv');
     }
 
     public function ImportationCsvPaiement()
@@ -392,6 +482,58 @@ class AdminController extends Controller
         if (!Session::has('idAdmin')) {
             return redirect()->route('loginclient');
         } else {
+            if (empty(request()->file('Paiement'))) {
+                // Retourne une erreur ou arrête le processus
+                return redirect()->back()->withErrors(['maison' => 'il ny a pas de fichier csv dans le paiement']);
+            }
+
+            $paiment = request()->file('Paiement');
+
+            $extension = $paiment->getClientOriginalExtension();
+            if($extension != 'csv'){
+                return redirect()->back()->withErrors(['maison' => 'le fichier csv n\'est pas au bon format']);
+            }
+
+            $paimentContents = file($paiment->getPathname());
+
+            $row = 0;
+            foreach ($paimentContents as $line) {
+
+                $row++;
+
+                if ($row == 1) {
+                    continue;
+                }
+                $data = str_getcsv($line, ",");
+
+                // $dateDevis = Carbon::createFromFormat('d/m/Y', $data[6])->format('Y-m-d');
+                $datePaiement = Carbon::createFromFormat('d/m/Y', $data[2])->format('Y-m-d');
+
+
+                // if (!is_numeric($dataA[2])) {
+                //     return redirect()->back()->withErrors(['surface' => "La ligne $rowA, le champs surface n'est pas un nombre"]);
+                // }
+                // if (!is_numeric($dataA[6])) {
+                //     return redirect()->back()->withErrors(['prix' => "La ligne $rowA, le champs prix n'est pas un nombre"]);
+                // }
+                // if (!is_numeric($dataA[7])) {
+                //     return redirect()->back()->withErrors(['quantite' => "La ligne $rowA, le champs quantité n'est pas un nombre"]);
+                // }
+
+                $data[3] = str_replace(',', '.', $data[3]); // surface
+                // $dataA[5] = str_replace(',', '.', $dataA[5]); // prix_unitaire
+                // $dataA[6] = str_replace(',', '.', $dataA[6]); // quantite
+                // $dataA[7] = str_replace(',', '.', $dataA[7]); // duree_travaux
+
+                $dataToInsert[] =[
+                    'ref_devis' =>$data[0],
+                    'ref_paiement' => $data[1],
+                    'date_paiement' => $datePaiement,
+                    'montant' => $data[3],
+                ];
+            }
+
+            DB::table('paiementimportationcsv')->insert($dataToInsert);
 
             return view('admin.importation');
 

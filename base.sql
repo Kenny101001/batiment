@@ -873,18 +873,17 @@ CREATE INDEX sessions_user_id_index ON public.sessions USING btree (user_id);
 --
 
 create or replace view v_travauxMaisonprix as(
-    select travauxmaison.idmaison,maison.nom as maison, maison.type , type.nom ,travauxmaison.idtravaux, travaux.nom as travaux, travaux.unite, travauxmaison.quantite, travaux.prixunitaire::double precision, (travauxmaison.quantite*travaux.prixunitaire)::double precision as total
+    select travauxmaison.idmaison,maison.nom as maison ,travauxmaison.idtravaux, travaux.nom as travaux, travaux.unite, travauxmaison.quantite, travaux.prixunitaire::double precision, (travauxmaison.quantite*travaux.prixunitaire)::double precision as total
     from travauxmaison
     join maison on travauxmaison.idmaison = maison.id
     join travaux on travauxmaison.idtravaux = travaux.id
-    join type on maison.type = type.id
+
 )
 
 create or replace view v_maisonType as(
-    select maison.id, maison.nom, maison.type as idtype,type.nom as type, description, maison.dure, sum(v_travauxMaisonprix.total) as total
+    select maison.id, maison.nom, description, maison.dure, sum(v_travauxMaisonprix.total) as total
     from maison
-    join type on maison.type = type.id
     join v_travauxMaisonprix on maison.id = v_travauxMaisonprix.idmaison
-    group by maison.id, maison.nom, maison.type, description ,type.nom , type.dure
+    group by maison.id, maison.nom, maison.type, description
 	order by total
 )

@@ -28,30 +28,32 @@
                 </div>
               @endif
 
-              <form  class="mb-3" action="{{ route('ImportationCsvMaisonDevis') }}" method="get">
+              <form  class="mb-3" action="{{ route('ImportationCsvMaisonDevis') }}" method="post" enctype="multipart/form-data">
                 @csrf
                     <div class="mb-3">
                         <h5>Importation de données</h5>
                     </div>
                     <div class="mb-3">
-                    <label for="email" class="form-label">Maison et travaux</label>
+                    <label for="" class="form-label">Maison et travaux</label>
                     <input
                         type="file"
                         class="form-control"
                         name="maisonTravaux"
                         placeholder="Maison et travaux"
                         autofocus
+                        accept=".csv, text/csv"
                     />
                     </div>
 
                     <div class="mb-3">
-                    <label for="email" class="form-label">Devis</label>
+                    <label for="" class="form-label">Devis</label>
                     <input
                         type="file"
                         class="form-control"
                         name="Devis"
                         placeholder="Devis"
                         autofocus
+                        accept=".csv, text/csv"
                     />
                     </div>
 
@@ -60,7 +62,7 @@
                     </div>
                 </form>
 
-                <form class="mb-3" action="{{ route('ImportationCsvPaiement') }}" method="get">
+                <form class="mb-3" action="{{ route('ImportationCsvPaiement') }}" method="post" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-3">
                     <h5>Importation de paiement</h5>
@@ -70,9 +72,10 @@
                         <input
                             type="file"
                             class="form-control"
-                            name=""
+                            name="Paiement"
                             placeholder="Paiement"
                             autofocus
+                            accept=".csv, text/csv"
                         />
                     </div>
                 <div class="mb-3">

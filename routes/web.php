@@ -37,9 +37,11 @@ Route::get('/typeFinition', [App\Http\Controllers\AdminController::class, 'typeF
 Route::get('/typeFinitionformulaire', [App\Http\Controllers\AdminController::class, 'typeFinitionformulaire'])->name('typeFinitionformulaire');
 Route::get('/typeFinitionUpdate', [App\Http\Controllers\AdminController::class, 'typeFinitionUpdate'])->name('typeFinitionUpdate');
 
+
 Route::get('/pageCsv', [App\Http\Controllers\AdminController::class, 'pageCsv'])->name('pageCsv');
-Route::get('/ImportationCsvMaisonDevis', [App\Http\Controllers\AdminController::class, 'ImportationCsvMaisonDevis'])->name('ImportationCsvMaisonDevis');
-Route::get('/ImportationCsvPaiement', [App\Http\Controllers\AdminController::class, 'ImportationCsvPaiement'])->name('ImportationCsvPaiement');
+Route::post('/ImportationCsvMaisonDevis', [App\Http\Controllers\AdminController::class, 'ImportationCsvMaisonDevis'])->name('ImportationCsvMaisonDevis');
+Route::post('/ImportationCsvPaiement', [App\Http\Controllers\AdminController::class, 'ImportationCsvPaiement'])->name('ImportationCsvPaiement');
+
 
 Route::get('/indexClient', [App\Http\Controllers\ClientController::class, 'index'])->name('indexClient');
 Route::get('/loginclient', [App\Http\Controllers\ClientController::class, 'loginclient'])->name('loginclient');

@@ -79,6 +79,25 @@
                 <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
                     <div class="card-body p-4">
                         <div class="mt-3">
+                            <label class="form-label">Lieux</label>
+                            <select class="form-control" name="lieu" required>
+                                <option value="">choisir un lieu</option>
+                                @foreach ($lieux as $lieu)
+                                    <option value="{{ $lieu->nom }}">{{ $lieu->nom }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="col-12" style="margin-bottom: 15px">
+                <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
+                    <div class="card-body p-4">
+                        <div class="mt-3">
                             <label class="form-label">Date de début des travaux</label>
                             <input type="date" class="form-control" name="date" required>
                         </div>
