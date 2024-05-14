@@ -98,13 +98,33 @@
             </li>
 
             <li class="menu-item">
-              <a
-                href=""
-                target="_blank"
+              <a href="{{route('pageCsv')}}"
+
                 class="menu-link"
               >
                 <i class="menu-icon tf-icons bx bx-file"></i>
-                <div data-i18n="Documentation">Suivis de traveaux</div>
+                <div data-i18n="Documentation">Importation csv</div>
+            </a>
+            </li>
+
+            <li class="menu-item">
+              <a href="{{route('typeTravaux')}}"
+
+                class="menu-link"
+              >
+                <i class="menu-icon tf-icons bx bx-file"></i>
+                <div data-i18n="Documentation">types de travaux</div>
+            </a>
+            </li>
+
+            <li class="menu-item">
+              <a
+                href="{{route('typeFinition')}}"
+
+                class="menu-link"
+              >
+                <i class="menu-icon tf-icons bx bx-file"></i>
+                <div data-i18n="Documentation">types de finition</div>
             </a>
             </li>
 

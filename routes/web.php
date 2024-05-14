@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('choix');
+    return view('indexClient');
 });
 
 Auth::routes();
@@ -29,6 +29,17 @@ Route::get('/indexAdmin', [App\Http\Controllers\AdminController::class, 'index']
 Route::get('/detailprojetAdmin', [App\Http\Controllers\AdminController::class, 'detailprojetAdmin'])->name('detailprojetAdmin');
 Route::get('/telechargerpdfAdmin', [App\Http\Controllers\AdminController::class, 'telechargerpdfAdmin'])->name('telechargerpdfAdmin');
 Route::get('/reinitialiserBase', [App\Http\Controllers\AdminController::class, 'reinitialiserBase'])->name('reinitialiserBase');
+Route::get('/typeTravaux', [App\Http\Controllers\AdminController::class, 'typeTravaux'])->name('typeTravaux');
+Route::get('/typeTravauxformulaire', [App\Http\Controllers\AdminController::class, 'typeTravauxformulaire'])->name('typeTravauxformulaire');
+Route::get('/typeTravauxUpdate', [App\Http\Controllers\AdminController::class, 'typeTravauxUpdate'])->name('typeTravauxUpdate');
+
+Route::get('/typeFinition', [App\Http\Controllers\AdminController::class, 'typeFinition'])->name('typeFinition');
+Route::get('/typeFinitionformulaire', [App\Http\Controllers\AdminController::class, 'typeFinitionformulaire'])->name('typeFinitionformulaire');
+Route::get('/typeFinitionUpdate', [App\Http\Controllers\AdminController::class, 'typeFinitionUpdate'])->name('typeFinitionUpdate');
+
+Route::get('/pageCsv', [App\Http\Controllers\AdminController::class, 'pageCsv'])->name('pageCsv');
+Route::get('/ImportationCsvMaisonDevis', [App\Http\Controllers\AdminController::class, 'ImportationCsvMaisonDevis'])->name('ImportationCsvMaisonDevis');
+Route::get('/ImportationCsvPaiement', [App\Http\Controllers\AdminController::class, 'ImportationCsvPaiement'])->name('ImportationCsvPaiement');
 
 Route::get('/indexClient', [App\Http\Controllers\ClientController::class, 'index'])->name('indexClient');
 Route::get('/loginclient', [App\Http\Controllers\ClientController::class, 'loginclient'])->name('loginclient');

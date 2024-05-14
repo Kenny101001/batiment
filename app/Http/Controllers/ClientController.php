@@ -26,7 +26,7 @@ class ClientController extends Controller
     public function logoutclient()
     {
         Session::flush();
-        return view('choix');
+        return redirect('indexClient');
     }
 
     public function connexion()
@@ -105,7 +105,7 @@ class ClientController extends Controller
             ->where('id', $finition)
             ->first();
 
-        $dure = (int)($maison->dure / 24);
+        $dure = (int)($maison->dure);
 
         $date = Carbon::createFromFormat('Y-m-d', $date);
         $fin = $date->copy()->addDays($dure);
@@ -123,24 +123,23 @@ class ClientController extends Controller
             'total'=> $maison->total,
             'type'=> $maison->type,
             'maison' => (string)$maison->nom,
-            'nbchambre'=> $maison->nbchambre,
-            'nbtoilette'=>$maison->nbtoilette,
             'finition' => $finition->nom,
             'pourcentage' => $finition->pourcentage,
             'totalpourcentage' => $pourcentage,
             'creation' => now(),
+            'description'=> $maison->description,
         ]);
 
 
-        $travaux = DB::table('v_travauxprix')->where('idtype', $maison->idtype)->get();
+        $travaux = DB::table('v_travauxmaisonprix')->where('idmaison', $maison->id)->get();
 
 
         foreach ($travaux as $travauxInfo) {
             $dataToInsert[] = [
                 'iddevis' => $devi_id,
-                'idtype' => $travauxInfo->idtype,
-                'type' =>$travauxInfo->type,
-                'nom' =>$travauxInfo->nom ,
+                'idtravaux' => $travauxInfo->idtravaux,
+                'type' =>$travauxInfo->nom,
+                'nom' =>$travauxInfo->travaux,
                 'unite' => $travauxInfo->unite,
                 'quantite' =>$travauxInfo->quantite ,
                 'prixunitaire' =>$travauxInfo->prixunitaire  ,
@@ -194,21 +193,35 @@ class ClientController extends Controller
 
             $devi = DB::table('devi')->where('id', $iddevis)->first();
 
-            $rules = array(
+            $reste = $devi->restant;
+
+            $rules = [
                 'iddevis' => 'required',
-                'dateVersement' => 'required|date|after_or_equal:'.date('Y-m-d'),
-                'versement' => 'required|min:1|max:'.$devi->restant,
-            );
+                'versement' => 'required|min:1|max:'.$reste,
+                'dateVersement' => 'required|after_or_equal:'.date('Y-m-d')
+            ];
 
             $validator = Validator::make(request()->all(), $rules);
 
             if ($validator->fails()) {
-                $errors = $validator->errors();
-                $msg = ($errors->has('iddevis') ? 'Le devis est requis<br/>' : '').
-                       ($errors->has('dateVersement') ? 'La date de versement doit etre égale ou supérieur a la date courante<br/>' : '').
-                       ($errors->has('versement') ? 'Le montant du versement est requis et doit être inférieur ou égal au solde restant<br/>' : '');
-                return response()->json(['errors' => $msg]);
+                $error = $validator->errors();
+                $msg = '';
+                if ($error->has('iddevis')) {
+                    $msg .= 'Le devis est requis<br/>';
+                }
+
+                if ($error->has('dateVersement')) {
+                    $msg .= 'La date de versement doit être égale ou supérieure à la date courante<br/>';
+                }
+
+                if ($error->has('versement')) {
+                    $msg .= 'Le montant du versement est requis et doit être inférieur ou égal au solde restant<br/>';
+                }
+                return redirect()->back()->withErrors($validator)->withInput();
+
             }
+
+            if($versement <= $reste){
 
             $newpayer = $devi->payer + $versement;
             $newreste = $devi->restant - $versement;
@@ -229,9 +242,13 @@ class ClientController extends Controller
             ->where('id', $iddevis)
             ->update(['payer' => $newpayer, 'restant' => $newreste]);
 
-            return response()->json(['success' => 'Formulaire validé avec succès.']);
+            // return response()->json(['success' => 'Formulaire validé avec succès.']);
 
-            // return redirect('projet');
+            return redirect('projet');
+
+            }else{
+                return redirect()->back()->withErrors(['versement' => 'Le montant du versement doit être inférieur ou égal au solde restant'])->withInput();
+            }
 
         }
     }
@@ -275,14 +292,12 @@ class ClientController extends Controller
                         Date de début : '. $projets->debut .'<br>
                         Date de fin : '. $projets->fin .'<br>
                         finition : '. $projets->finition .'<br>
-                        nombre de chambre : '. $projets->nbchambre .'<br>
-                        nombre de toilette : '. $projets->nbtoilette .'<br>
+                        '. $projets->description .'<br>
                     </div>';
             $html .= '<h4>Liste des travaux</h4>';
             $html .= '<table style="border:1px solid black; border-collapse:collapse; width:100%;">';
             $html .= '<thead style="border:1px solid black;">
                         <tr>
-                            <th style="border:1px solid black; padding:5px;">Idtype</th>
                             <th style="border:1px solid black; padding:5px;">Type</th>
                             <th style="border:1px solid black; padding:5px;">Nom</th>
                             <th style="border:1px solid black; padding:5px;">Unite</th>
@@ -294,7 +309,6 @@ class ClientController extends Controller
             $html .= '<tbody>';
             foreach ($projetsdetails as $travaux){
                 $html .= '<tr style="border:1px solid black;">
-                            <td style="border:1px solid black; padding:5px;">'. $travaux->idtype .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->type .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->nom .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->unite .'</td>

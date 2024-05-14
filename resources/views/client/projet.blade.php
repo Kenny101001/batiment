@@ -27,9 +27,9 @@
                             <h4>{{ $projet->maison}}</h4>
                             <h5>Finition {{ $projet->finition}}</h5>
                             <br>
-                            <span>{{ $projet->nbchambre}} chambres / {{ $projet->nbtoilette}} toilettes</span>
+                            <span>{{ $projet->description}}
                             <br>
-                            <span>duré : {{ $projet->dure /24}} jours </span>
+                            <span>duré : {{ $projet->dure}} jours </span>
                             <br>
                             <span>Début : {{ $projet->debut}} -> Fin : {{ $projet->fin}}</span>
                             <br>

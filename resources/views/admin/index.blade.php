@@ -45,15 +45,17 @@
                                         <h4>{{ $projet->maison}}</h4>
                                         <h5>Finition {{ $projet->finition}}</h5>
                                         <br>
-                                        <span>{{ $projet->nbchambre}} chambres / {{ $projet->nbtoilette}} toilettes</span>
+                                        <span>{{ $projet->description}}</span>
                                         <br>
-                                        <span>duré : {{ $projet->dure /24}} jours </span>
+                                        <span>duré : {{ $projet->dure}} jours </span>
                                         <br>
                                         <span>Début : {{ $projet->debut}} -> Fin : {{ $projet->fin}}</span>
                                         <br>
                                         <span>Total : {{ $projet->totalpourcentage}}</span>
                                         <br>
                                         <span>Payer : {{ $projet->payer }}</span>
+                                        <br>
+                                        <span>pourcentage payer : {{ number_format(($projet->payer * 100) / $projet->totalpourcentage, 2) }} %</span>
                                         <br>
                                         <br>
                                         <a href="{{ route('detailprojetAdmin',['iddevis' => $projet->id]) }}" class="btn btn-primary py-3 px-5">Voir plus</a>
@@ -125,7 +127,7 @@
             </div>
             </div>
         </div>
-        <!-- <div class="col-lg-6 col-md-12 col-6 mb-4">
+        <div class="col-lg-6 col-md-12 col-6 mb-4">
             <div class="card">
             <div class="card-body">
                 <div class="card-title d-flex align-items-start justify-content-between">
@@ -153,12 +155,22 @@
                     </div>
                 </div>
                 </div>
-                <span>Sales</span>
-                <h3 class="card-title text-nowrap mb-1">$4,679</h3>
-                <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.42%</small>
+                <span>Paiement effectué</span>
+                <h3 class="card-title mb-2">
+                <?php $totalpayer =  0; ?>
+
+                @foreach ($projetsFinis as $projetspayer)
+                    <?php $totalpayer +=  $projetspayer->payer; ?>
+                @endforeach
+                <p>
+                    <span>{{ $totalpayer}} Ar </span>
+                </p>
+
+                </h3>
+                <!-- <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.42%</small> -->
             </div>
             </div>
-        </div> -->
+        </div>
         </div>
     </div>
     <!-- Total Revenue -->

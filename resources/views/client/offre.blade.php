@@ -36,8 +36,8 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
-                                <p class="card-text mb-0">{{ $maison->nbchambre }} <i class="fa fa-bed"></i></p>
-                                <p class="card-text mb-0">{{ $maison->nbtoilette }} <i class="fa fa-toilet"></i></p>
+                                <p class="card-text mb-0">{{ $maison->description }} <i class="fa fa-bed"></i></p>
+
                             </div>
                         </div>
                     </div>
