@@ -191,7 +191,24 @@ class ClientController extends Controller
             $date = request()->input('dateVersement');
             $versement = request()->input('versement');
 
+
             $devi = DB::table('devi')->where('id', $iddevis)->first();
+
+            $rules = array(
+                'iddevis' => 'required',
+                'dateVersement' => 'required|date|after_or_equal:'.date('Y-m-d'),
+                'versement' => 'required|min:1|max:'.$devi->restant,
+            );
+
+            $validator = Validator::make(request()->all(), $rules);
+
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                $msg = ($errors->has('iddevis') ? 'Le devis est requis<br/>' : '').
+                       ($errors->has('dateVersement') ? 'La date de versement doit etre égale ou supérieur a la date courante<br/>' : '').
+                       ($errors->has('versement') ? 'Le montant du versement est requis et doit être inférieur ou égal au solde restant<br/>' : '');
+                return response()->json(['errors' => $msg]);
+            }
 
             $newpayer = $devi->payer + $versement;
             $newreste = $devi->restant - $versement;
@@ -212,7 +229,9 @@ class ClientController extends Controller
             ->where('id', $iddevis)
             ->update(['payer' => $newpayer, 'restant' => $newreste]);
 
-            return redirect('projet');
+            return response()->json(['success' => 'Formulaire validé avec succès.']);
+
+            // return redirect('projet');
 
         }
     }
