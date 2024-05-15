@@ -419,7 +419,7 @@ class AdminController extends Controller
 
          //maison Import
         $idmaison = DB::select("INSERT INTO maison(nom, description, dure, surface)
-        SELECT type_maison, description, duree_travaux, surface
+        SELECT distinct type_maison, description, duree_travaux, surface
         FROM maisonimportationcsv
         WHERE type_maison NOT IN (SELECT nom FROM maison)
         GROUP BY type_maison, type_maison, description, duree_travaux, surface
@@ -427,7 +427,7 @@ class AdminController extends Controller
 
          //travaux Import
         $idtravaux = DB::select("INSERT INTO travaux(nom, unite, prixunitaire, codetravaux)
-        SELECT type_travaux, unite, prix_unitaire, code_travaux
+        SELECT distinct type_travaux, unite, prix_unitaire, code_travaux
         FROM maisonimportationcsv
         WHERE code_travaux NOT IN (SELECT codetravaux FROM travaux)
         GROUP BY type_travaux, unite, prix_unitaire, code_travaux
@@ -435,7 +435,7 @@ class AdminController extends Controller
 
         //devis Import
         $iddevis = DB::select("INSERT INTO devi(numclient, debut, maison, finition, pourcentage, creation, lieu, refdevis)
-        SELECT client, date_debut, type_maison, finition,
+        SELECT distinct client, date_debut, type_maison, finition,
             CAST(REPLACE(SUBSTRING(taux_finition, 0, LENGTH(taux_finition)-0), ',', '.')::numeric(5,2) AS numeric(5,2)) AS pourcentage_creation,
             date_devis, lieu, ref_devis
         FROM devisimportationcsv
@@ -485,11 +485,10 @@ class AdminController extends Controller
             // dd($iddevisref);
             DB::table('devi')->where('refdevis', $iddevisref)->update([ 'dure' => $dure,'fin' => $fin,'payer' => $payement, 'total' => $total, 'restant' => $reste, 'description' => $description, 'type' => $type , 'totalpourcentage' => $totalpourcentage]);
     
-
         }
         
         $idtravauxMaison= DB::select("INSERT INTO travauxmaison(idmaison, idtravaux, quantite)
-        SELECT maison.id as idmaison,travaux.id as idtravaux , maisonimportationcsv.quantite
+        SELECT distinct maison.id as idmaison,travaux.id as idtravaux , maisonimportationcsv.quantite
         FROM maisonimportationcsv
         join maison on maisonimportationcsv.type_maison = maison.nom
         join travaux on maisonimportationcsv.code_travaux = travaux.codetravaux
@@ -498,7 +497,7 @@ class AdminController extends Controller
         RETURNING id");
 
         $idtravauxDevis= DB::select("INSERT INTO travauxdevis(iddevis, idtravaux, nom, unite,quantite,prixunitaire,total)
-        SELECT devi.id as iddevis, travaux.id as idtravaux,travaux.nom,travaux.unite, maisonimportationcsv.quantite,travaux.prixunitaire
+        SELECT distinct devi.id as iddevis, travaux.id as idtravaux,travaux.nom,travaux.unite, maisonimportationcsv.quantite,travaux.prixunitaire
         , (maisonimportationcsv.quantite*travaux.prixunitaire)as total
         FROM maisonimportationcsv
         join maison on maisonimportationcsv.type_maison = maison.nom
@@ -511,11 +510,18 @@ class AdminController extends Controller
 
         
         $idclient= DB::select("INSERT INTO client(numero)
-        SELECT numclient
+        SELECT distinct numclient
         FROM devi
         where numclient NOT IN (SELECT numero FROM client)
         group by numclient
-        RETURNING id");     
+        RETURNING id");   
+        
+        $idlieu= DB::select("INSERT INTO lieu(nom)
+        SELECT distinct lieu
+        FROM devi
+        where lieu NOT IN (SELECT nom FROM lieu)
+        group by lieu
+        RETURNING id");   
 
         return redirect('pageCsv');
     }
@@ -576,10 +582,31 @@ class AdminController extends Controller
                 ];
             }
 
+            // $check = DB::table('paiementimportationcsv')
+            //     ->whereIn('ref_devis', array_column($dataToInsert, 'ref_devis'))
+            //     ->whereIn('ref_paiement', array_column($dataToInsert, 'ref_paiement'))
+            //     ->whereIn('date_paiement', array_column($dataToInsert, 'date_paiement'))
+            //     ->get();
+
+            // if (count($check) > 0) {
+            //     return redirect()->back()->withErrors(['exist' => 'Des informations existe déjà dans la base de données']);
+            // }                    
+
+            foreach ($dataToInsert as $key => $value) {
+                $exist = DB::table('paiementimportationcsv')
+                    ->where('ref_devis', $value['ref_devis'])
+                    ->where('ref_paiement', $value['ref_paiement'])
+                    ->where('date_paiement', $value['date_paiement'])
+                    ->first();
+                if ($exist) {
+                    unset($dataToInsert[$key]);
+                }
+            }
+
             DB::table('paiementimportationcsv')->insert($dataToInsert);
 
             $idPaiement= DB::select("INSERT INTO histoversement(versement, reste,total,date,refdevis,refpaiement)
-            SELECT montant,
+            SELECT distinct montant,
             ROUND((devi.totalpourcentage - montant)::numeric, 2) as reste,
             devi.totalpourcentage,
             paiementimportationcsv.date_paiement,
@@ -587,9 +614,9 @@ class AdminController extends Controller
             paiementimportationcsv.ref_paiement
             FROM paiementimportationcsv
             JOIN devi ON devi.refdevis = paiementimportationcsv.ref_devis
-            WHERE (montant, devi.totalpourcentage, paiementimportationcsv.date_paiement, paiementimportationcsv.ref_devis, paiementimportationcsv.ref_paiement)
-            NOT IN (SELECT versement, total, date, refdevis, refpaiement FROM histoversement)
-            GROUP BY montant, devi.totalpourcentage, paiementimportationcsv.date_paiement, paiementimportationcsv.ref_devis, paiementimportationcsv.ref_paiement
+            WHERE (paiementimportationcsv.ref_paiement)
+            NOT IN (SELECT refpaiement FROM histoversement)
+            GROUP BY montant, reste,devi.totalpourcentage, paiementimportationcsv.date_paiement, paiementimportationcsv.ref_devis, paiementimportationcsv.ref_paiement
             RETURNING id");
 
 

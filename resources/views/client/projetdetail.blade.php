@@ -75,6 +75,36 @@
                             </div>
 
                         </div>
+
+                        <div class="mt-3">
+
+                            <h5>Historique de payement</h5>
+                            <table id="dataTablePdfVersement" class="table table-striped table-hover" style="font-size: 14px;">
+                                <th>
+                                    <td>référence devis</td>
+                                    <td>versement</td>
+                                    <td>date</td>
+                                </th>
+                                <?php $total = 0; ?>
+                                @foreach ($histoversements as $histoversement)
+                                <tr>
+                                    <td></td>
+                                    <td>{{$histoversement->refdevis}}</td>
+                                    <td>{{$histoversement->versement}}</td>
+                                    <td>{{$histoversement->date}}</td>
+
+                                    <?php 
+                                    
+                                    $total += $histoversement->versement; 
+                                    ?>
+                                </tr>
+                                @endforeach
+
+                                <h5>Total : {{$total}} Ar</h5>
+                            </table>
+                            
+                          
+                        </div>
                     </div>
                 </div>
             </div>
@@ -105,12 +135,16 @@ $(document).ready(function() {
         doc.text('finition : {{$projets->finition}}', 20, 70);
 
         doc.autoTable({html: '#dataTablePdf', startY: 100});
+        
+        doc.text('Historique de payement :', 10, 190);
+        doc.setFontStyle('bold');
 
         // Ajout d'une nouvelle page
         // doc.addPage();
 
         // Deuxième table
-        // doc.autoTable({html: '#dataTablePdf2'});
+        doc.autoTable({html: '#dataTablePdfVersement',startY: 200});
+        doc.text('Total versement : {{$total}} Ar', 20, 260);
 
         doc.save('devis.pdf');
     });

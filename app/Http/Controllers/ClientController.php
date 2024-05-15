@@ -177,7 +177,9 @@ class ClientController extends Controller
             $projetsdetails = DB::table('travauxdevis')->where('iddevis',$iddevis )->get();
             $projets = DB::table('devi')->where('id',request()->input('iddevis') )->first();
 
-            return view('client.projetdetail', compact('projets','projetsdetails'));
+            $histoversements = DB::table('histoversement')->where('refdevis',$projets->refdevis )->get();
+
+            return view('client.projetdetail', compact('projets','projetsdetails','histoversements'));
 
         }
     }
@@ -247,6 +249,12 @@ class ClientController extends Controller
             $projetsdetails = DB::table('travauxdevis')->where('iddevis',$iddevis )->get();
             $projets = DB::table('devi')->where('id',request()->input('iddevis') )->first();
 
+            $histoversements = DB::table('histoversement')->where('refdevis',$projets->refdevis )->get();
+
+            $totalversement = 0;
+            foreach ($histoversements as $histoversement) {
+                $totalversement += $histoversement->versement;
+            }
 
             $options = new Options();
             $options->set('defaultFont', 'Helvetica');
@@ -301,6 +309,31 @@ class ClientController extends Controller
                         </tr>';
             }
             $html .= '</tbody></table>';
+
+
+            //table versment
+
+            $html .= '<h4>Versement</h4>';
+            
+            $html .= '<table style="border:1px solid black; border-collapse:collapse; width:100%;">';
+            $html .= '<thead style="border:1px solid black;">
+                        <tr>
+                            <th style="border:1px solid black; padding:5px;">référence devis</th>
+                            <th style="border:1px solid black; padding:5px;">versement</th>
+                            <th style="border:1px solid black; padding:5px;">date</th>
+                        </tr>
+                    </thead>';
+            $html .= '<tbody>';
+            foreach ($histoversements as $histoversement){
+                $html .= '<tr style="border:1px solid black;">    
+                            <td style="border:1px solid black; padding:5px;">'. $histoversement->refdevis .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $histoversement->versement .'</td>
+                            <td style="border:1px solid black; padding:5px;">'. $histoversement->date .'</td>
+                        </tr>';
+            }
+
+            $html .= '</tbody></table>';
+            $html .= '<h4>TOTAL : '.$totalversement.'Ar</h4>';
 
             $dompdf->loadHtml($html);
 

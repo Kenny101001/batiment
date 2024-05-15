@@ -5,7 +5,7 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
     <div class="col-lg-8 mb-4 order-0">
-        <div class="card" style="height:1090px">
+        <div class="card" style="height:1150px">
         <div class="d-flex align-items-end row">
             <div class="col-sm-7">
             <div class="card-body" height="auto">
@@ -55,7 +55,17 @@
                                         <br>
                                         <span>Payer : {{ $projet->payer }}</span>
                                         <br>
-                                        <span>pourcentage payer : {{ number_format(($projet->payer * 100) / $projet->totalpourcentage, 2) }} %</span>
+                                        <?php $pourcentage = number_format(($projet->payer * 100) / $projet->totalpourcentage, 2); ?>
+
+                                        @if($pourcentage < 50)
+                                            <span style="color:red">pourcentage payer : {{ number_format($pourcentage, 2) }} %</span>
+                                        @elseif($pourcentage > 50)
+                                            <span style="color:green">pourcentage payer : {{ number_format($pourcentage, 2) }} %</span>
+                                        @elseif($pourcentage == 50)
+                                            <span>pourcentage payer : {{ number_format($pourcentage, 2) }} %</span>
+                                        @endif
+                                        <br>
+                                        <span>Numéro du client : {{ $projet->numclient }}</span>
                                         <br>
                                         <br>
                                         <a href="{{ route('detailprojetAdmin',['iddevis' => $projet->id]) }}" class="btn btn-primary py-3 px-5">Voir plus</a>
