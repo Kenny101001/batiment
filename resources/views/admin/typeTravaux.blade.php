@@ -14,7 +14,7 @@
                             <h5>les différents travaux</h5>
                                 <table id="dataTablePdf" class="table table-striped table-hover" style="font-size: 14px;">
                                     <th>
-                                        <td>id</td>
+                                        <td><a href="{{route('typeTravaux', ['type'=>'id', 'ordre' => $nextordre])}}">id</a> <i class="fa fa-arrow-up" style="color:green; display: none" id="icon-id-asc"></i><i class="fa fa-arrow-down" style="color:red" id="icon-id-desc"></i></td>
                                         <td>nom</td>
                                         <td>unite</td>
                                         <td>prixunitaire</td>

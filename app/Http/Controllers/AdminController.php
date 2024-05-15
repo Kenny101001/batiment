@@ -124,7 +124,7 @@ class AdminController extends Controller
             $html .= '<thead style="border:1px solid black;">
                         <tr>
 
-                            <th style="border:1px solid black; padding:5px;">Type</th>
+                           
                             <th style="border:1px solid black; padding:5px;">Nom</th>
                             <th style="border:1px solid black; padding:5px;">Unite</th>
                             <th style="border:1px solid black; padding:5px;">quantite</th>
@@ -135,7 +135,7 @@ class AdminController extends Controller
             $html .= '<tbody>';
             foreach ($projetsdetails as $travaux){
                 $html .= '<tr style="border:1px solid black;">
-                            <td style="border:1px solid black; padding:5px;">'. $travaux->type .'</td>
+                           
                             <td style="border:1px solid black; padding:5px;">'. $travaux->nom .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->unite .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->quantite .'</td>
@@ -162,13 +162,15 @@ class AdminController extends Controller
     {
         if(Session::has('idAdmin')){
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        foreach (DB::select('SHOW TABLES') as $table) {
-            if (isset($table->Tables_in_projet) && $table->Tables_in_projet != 'users' && $table->Tables_in_projet != 'clients') {
-                DB::table($table->Tables_in_projet)->truncate();
+            foreach (DB::select("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'") as $table) {
+                $tableName = $table->tablename;
+                
+                // Exclure certaines tables de la liste de suppression
+                if (!in_array($tableName, ['utilisateur', 'finition', 'lieu', 'type'])) {
+                    DB::table($tableName)->truncate();
+                }
             }
-        }
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            
 
         return redirect('indexAdmin');
         }else{
@@ -180,9 +182,25 @@ class AdminController extends Controller
     public function typeTravaux()
     {
         if(Session::has('idAdmin')){
-        $typeTravaux = DB::table('travaux')->orderBy('id')->get();
 
-        return view('admin.typeTravaux', compact('typeTravaux'));
+            $ordre = 'desc';
+            $nextordre ='desc';
+
+            if(request()->input('ordre') && request()->input('type')){
+                $type = request()->input('type');
+                $ordre = request()->input('ordre');
+                $nextordre = $ordre == 'desc' ? 'asc' : 'desc';
+                $ordre = $nextordre;
+                
+                $typeTravaux = DB::table('travaux')->orderBy($type,$ordre)->get();
+
+            }else{   
+                $typeTravaux = DB::table('travaux')->orderBy('id')->get();
+            }
+            
+
+            return view('admin.typeTravaux', compact('typeTravaux','nextordre'));
+
         }else{
             Session::flush();
             return redirect()->route('login');
@@ -196,9 +214,15 @@ class AdminController extends Controller
         $travaux = DB::table('v_travauxmaisonprix')->where('idtravaux', $idtravaux)->first();
 
         $unites =DB::table('v_travauxmaisonprix')
-                    ->selectRaw('unite')
-                    ->groupBy(DB::raw('unite'))
-                    ->get();
+                ->selectRaw('unite')
+                ->groupBy(DB::raw('unite'))
+                ->get();
+        
+
+        // $unites =DB::table('v_travauxmaisonprix')
+        //             ->selectRaw('unite')
+        //             ->groupBy(DB::raw('unite',$ordre))
+        //             ->get();
 
         return view('admin.typetravauxformulaire', compact('travaux','unites'));
         }else{
@@ -405,14 +429,14 @@ class AdminController extends Controller
         $idtravaux = DB::select("INSERT INTO travaux(nom, unite, prixunitaire, codetravaux)
         SELECT type_travaux, unite, prix_unitaire, code_travaux
         FROM maisonimportationcsv
-        WHERE type_travaux NOT IN (SELECT type_travaux FROM travaux)
+        WHERE code_travaux NOT IN (SELECT codetravaux FROM travaux)
         GROUP BY type_travaux, unite, prix_unitaire, code_travaux
         RETURNING id");
 
         //devis Import
         $iddevis = DB::select("INSERT INTO devi(numclient, debut, maison, finition, pourcentage, creation, lieu, refdevis)
         SELECT client, date_debut, type_maison, finition,
-            CAST(REPLACE(SUBSTRING(taux_finition, 0, LENGTH(taux_finition)-1), ',', '.') AS numeric(5,2)) AS pourcentage_creation,
+            CAST(REPLACE(SUBSTRING(taux_finition, 0, LENGTH(taux_finition)-0), ',', '.')::numeric(5,2) AS numeric(5,2)) AS pourcentage_creation,
             date_devis, lieu, ref_devis
         FROM devisimportationcsv
         WHERE ref_devis NOT IN (SELECT refdevis FROM devi)
@@ -448,15 +472,15 @@ class AdminController extends Controller
                 $total += ($maisonimportationcsvs->prix_unitaire * $maisonimportationcsvs->quantite);
             }
 
-            $reste = $total - $payement;
-
             $type = $devisimportationcsv->type_maison;
 
             $pourcentageCalcul = $id->pourcentage * $total / 100;
 
-            $totalpourcentage = $pourcentageCalcul + $total;
+            $totalpourcentage = round(($pourcentageCalcul + $total), 2, PHP_ROUND_HALF_UP);
 
             $description = $maisonimportationcsv[0]->description;
+
+            $reste = $totalpourcentage - $payement;
 
             // dd($iddevisref);
             DB::table('devi')->where('refdevis', $iddevisref)->update([ 'dure' => $dure,'fin' => $fin,'payer' => $payement, 'total' => $total, 'restant' => $reste, 'description' => $description, 'type' => $type , 'totalpourcentage' => $totalpourcentage]);
@@ -464,15 +488,34 @@ class AdminController extends Controller
 
         }
         
-        // $idtravauxMaison= DB::select("INSERT INTO travauxmaison(idmaison, idtravaux, quantite)
-        //     SELECT type_travaux, unite, prixunitaire, code_travaux
-        //     FROM maisonimportationcsv
-        //     join devisimportationcsv on maisonimportationcsv.type_maison = devisimportationcsv.type_maison
-        //     join travaux on maisonimportationcsv.code_travaux = travaux.codetravaux
-        //     WHERE type_travaux NOT IN (SELECT type_travaux FROM travaux)
-        //     GROUP BY type_travaux, unite, prixunitaire, code_travaux
-        //     RETURNING id");
-                
+        $idtravauxMaison= DB::select("INSERT INTO travauxmaison(idmaison, idtravaux, quantite)
+        SELECT maison.id as idmaison,travaux.id as idtravaux , maisonimportationcsv.quantite
+        FROM maisonimportationcsv
+        join maison on maisonimportationcsv.type_maison = maison.nom
+        join travaux on maisonimportationcsv.code_travaux = travaux.codetravaux
+        where (maison.id,travaux.id,maisonimportationcsv.quantite) NOT IN (SELECT idmaison,idtravaux,quantite FROM travauxmaison)
+        group by maison.id ,travaux.id , maisonimportationcsv.quantite
+        RETURNING id");
+
+        $idtravauxDevis= DB::select("INSERT INTO travauxdevis(iddevis, idtravaux, nom, unite,quantite,prixunitaire,total)
+        SELECT devi.id as iddevis, travaux.id as idtravaux,travaux.nom,travaux.unite, maisonimportationcsv.quantite,travaux.prixunitaire
+        , (maisonimportationcsv.quantite*travaux.prixunitaire)as total
+        FROM maisonimportationcsv
+        join maison on maisonimportationcsv.type_maison = maison.nom
+        join devi on maisonimportationcsv.type_maison = devi.maison
+        join travaux on maisonimportationcsv.code_travaux = travaux.codetravaux
+        where (devi.id, travaux.id ,travaux.nom,travaux.unite, maisonimportationcsv.quantite,travaux.prixunitaire)
+        not in (select iddevis, idtravaux ,nom,unite,quantite,prixunitaire from travauxdevis)
+        group by devi.id, travaux.id, travaux.nom,travaux.unite, maisonimportationcsv.quantite,travaux.prixunitaire
+        RETURNING id");
+
+        
+        $idclient= DB::select("INSERT INTO client(numero)
+        SELECT numclient
+        FROM devi
+        where numclient NOT IN (SELECT numero FROM client)
+        group by numclient
+        RETURNING id");     
 
         return redirect('pageCsv');
     }
@@ -534,6 +577,33 @@ class AdminController extends Controller
             }
 
             DB::table('paiementimportationcsv')->insert($dataToInsert);
+
+            $idPaiement= DB::select("INSERT INTO histoversement(versement, reste,total,date,refdevis,refpaiement)
+            SELECT montant,
+            ROUND((devi.totalpourcentage - montant)::numeric, 2) as reste,
+            devi.totalpourcentage,
+            paiementimportationcsv.date_paiement,
+            paiementimportationcsv.ref_devis,
+            paiementimportationcsv.ref_paiement
+            FROM paiementimportationcsv
+            JOIN devi ON devi.refdevis = paiementimportationcsv.ref_devis
+            WHERE (montant, devi.totalpourcentage, paiementimportationcsv.date_paiement, paiementimportationcsv.ref_devis, paiementimportationcsv.ref_paiement)
+            NOT IN (SELECT versement, total, date, refdevis, refpaiement FROM histoversement)
+            GROUP BY montant, devi.totalpourcentage, paiementimportationcsv.date_paiement, paiementimportationcsv.ref_devis, paiementimportationcsv.ref_paiement
+            RETURNING id");
+
+
+            $devisPaiement = DB::select("SELECT refdevis from devi where (refdevis) in (select refdevis from histoversement)");
+
+            for($i=0; $i < count($devisPaiement); $i++) {
+                $sommeVersement = DB::select("SELECT SUM(versement) as sommeversement FROM histoversement where refdevis = '".$devisPaiement[$i]->refdevis."'");
+
+                $devi = DB::select("SELECT * FROM devi WHERE refdevis = '".$devisPaiement[$i]->refdevis."'");
+              
+                $reste = $devi[0]->totalpourcentage - $sommeVersement[0]->sommeversement;
+
+                DB::table('devi')->where('refdevis', $devisPaiement[$i]->refdevis)->update(['payer' => $sommeVersement[0]->sommeversement, 'restant' => $reste]);
+            }
 
             return view('admin.importation');
 

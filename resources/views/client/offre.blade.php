@@ -24,11 +24,9 @@
                         <div class="card-body p-4">
                             <h3 class="card-title text-center mb-0">{{ $maison->nom }}</h3>
                             <br>
-                            <h6 style="color:orange" class="card-title text-center mb-0">{{ $maison->total }} Ar</h6>
+                            <h6 style="color:orange" class="card-title text-center mb-0">{{ number_format($maison->total, 2) }} Ar</h6>
                             <hr style="background-color: #1A1A1A; height: 2px">
                             <div class="d-flex justify-content-between align-items-center">
-                                <p class="card-text mb-0">type {{ $maison->type }}</p>
-
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="radio-{{ $maison->id }}" name="maisonid" value="{{ $maison->id }}" style="margin-right: 10px">
                                     <label class="form-check-label" for="radio-{{ $maison->id }}">

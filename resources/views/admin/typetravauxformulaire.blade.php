@@ -30,11 +30,7 @@
 
               <form  class="mb-3" action="{{ route('typeTravauxUpdate') }}" method="get">
                 @csrf
-                <div class="mb-3">
-                  <label for="email" class="form-label">Type</label>
-                  <h5>{{$travaux->type}}</h5>
-                </div>
-
+                
                 <div class="mb-3">
                   <label for="email" class="form-label">Nom</label>
                   <h5>{{$travaux->travaux}}</h5>

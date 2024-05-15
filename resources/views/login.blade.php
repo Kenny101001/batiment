@@ -148,11 +148,11 @@
               </p>
 
               <p class="text-center">
-                <button class="btn btn-primary" style="color:white">
+                <!-- <button class="btn btn-primary" style="color:white">
                     <a href="{{route('choix')}}" style="color:white">
                         <span>Revenir au choix</span>
                     </a>
-                </button>
+                </button> -->
             </div>
           </div>
           <!-- /Register -->

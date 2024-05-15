@@ -15,7 +15,7 @@
                             <table id="dataTablePdf" class="table table-striped table-hover" style="font-size: 14px;">
                                 <th>
 
-                                    <td>type</td>
+                                   
                                     <td>nom</td>
                                     <td>unite</td>
                                     <td>quantite</td>
@@ -26,7 +26,7 @@
                                 <tr>
                                     <td></td>
 
-                                    <td>{{$projetsdetail->type}}</td>
+                                    
                                     <td>{{$projetsdetail->nom}}</td>
                                     <td>{{$projetsdetail->unite}}</td>
                                     <td>{{$projetsdetail->quantite}}</td>

@@ -23,23 +23,24 @@
             <div class="col-12" style="margin-bottom: 15px">
                 <div class="card border-0" style="border-radius: 10px; background-color: #F5F5F5;">
                     <div class="card-body p-4">
-                        <div id="error-messages" style="display: none; color: red; font-weight: bold;"></div>
+                        <span><div id="error-messages" style="display: none; color: red; font-weight: bold;"></div></span>
 
-                        <form action="{{route('versement')}}" id="form-versement"  method="post">
+                        <form id="form-versement">
                             @csrf
                             <div class="mt-3">
                                 <label  class="form-label">Versement</label>
                                 <br>
                                 <small>reste : {{$projets->restant}} Ar</small>
                                 <input min="1"  type="number" name="versement" class="form-control text-right focus:ring-[#FF2D20] focus:border-[#FF2D20] rounded-sm border-[#FF2D20] border-b-2 p-1"  required style="caret-color: #FF2D20;-moz-appearance:textfield;">
-                            </div>
-                            <div class="mt-3">
-                            <label  class="form-label">Date</label>
-                                <input type="date" class="form-control" name="dateVersement" required>
-                            </div>
-                            <div class="mt-3">
+                                </div>
+                                <div class="mt-3">
+                                <label  class="form-label">Date</label>
+                                    <input type="date" class="form-control" name="dateVersement" required>
+                                </div>
+                                <div class="mt-3">
 
-                            <input type="hidden" name="iddevis" value="{{$projets->id}}">
+                                <input type="hidden" name="refdevis" value="{{$projets->refdevis}}">
+                                
                                 <button class="btn btn-primary py-3 px-5" type="submit" style="border:none">
                                     validez
                                 </button>
@@ -116,40 +117,32 @@ $(document).ready(function() {
 });
 </script>
 
-<!--
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('#').submit(function (e) {
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelector('#form-versement').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            $.ajax({
-                method: 'POST',
-                url: '/versement',
-                data: $(this).serialize(),
-
-                success: function (response) {
-                    if (response.status === 'success') {
-                        alert(response.message);
+            axios.post('/versement', new FormData(this))
+                .then(function (response) {
+                    if (response.data.status === 'success') {
+                        alert(response.data.message);
                     }
-                },
-                statusCode: {
-                    422: function (response) {
+                })
+                .catch(function (error) {
+                    if (error.response.status === 422) {
                         // Afficher les messages d'erreur
-                        $('#error-messages').empty().show();
                         var errorHtml = '';
-                        $.each(response.responseJSON.errors, function(key, value) {
-                            errorHtml += '<p>' + value + '</p>';
+                        Object.values(error.response.data.errors).forEach(function (value) {
+                            errorHtml += value ;
                         });
-                        $('#error-messages').html(errorHtml);
+                        document.querySelector('#error-messages').innerHTML = errorHtml;
+                        document.querySelector('#error-messages').style.display = 'block';
                     }
-                }
-
-            });
+                });
         });
     });
-</script> -->
-
-
+</script>
 
 @endsection

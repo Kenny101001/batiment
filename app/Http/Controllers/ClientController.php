@@ -73,7 +73,7 @@ class ClientController extends Controller
         } else {
 
             $maisons = DB::table('v_maisontype') ->get();
-            $finitions = DB::table('finition') ->get();
+            $finitions = DB::table('finition')->orderBy('id')->get();
             $lieux = DB::table('lieu') ->get();
 
             return view('client.offre', compact('maisons','finitions','lieux'));
@@ -121,7 +121,7 @@ class ClientController extends Controller
             'fin'=> $fin,
             'restant'=> $pourcentage,
             'total'=> $maison->total,
-            'type'=> $maison->type,
+            'type'=> $maison->nom,
             'maison' => (string)$maison->nom,
             'finition' => $finition->nom,
             'pourcentage' => $finition->pourcentage,
@@ -129,6 +129,7 @@ class ClientController extends Controller
             'creation' => now(),
             'description'=> $maison->description,
             'lieu' => $lieu,
+            'refdevis' => 'D' . rand(1, 99) . rand(1, 99),
             'numclient' => Session::get('numero'),
         ]);
 
@@ -140,7 +141,6 @@ class ClientController extends Controller
             $dataToInsert[] = [
                 'iddevis' => $devi_id,
                 'idtravaux' => $travauxInfo->idtravaux,
-                'type' =>$travauxInfo->nom,
                 'nom' =>$travauxInfo->travaux,
                 'unite' => $travauxInfo->unite,
                 'quantite' =>$travauxInfo->quantite ,
@@ -182,76 +182,57 @@ class ClientController extends Controller
         }
     }
 
-    public function versement()
+    public function versement(Request $request)
     {
         if (!Session::has('numero')) {
             return redirect()->route('loginclient');
         } else {
+    
+          
+            $date = $request->input('dateVersement');
+            $versement = $request->input('versement');
+            $refdevis = $request->input('refdevis');
+            $refpaiement = substr(str_shuffle("abcdefghijklmnopqrstuvwxyz".rand(0,999999)), 0, 6);
 
-            $iddevis = request()->input('iddevis');
-            $date = request()->input('dateVersement');
-            $versement = request()->input('versement');
-
-
-            $devi = DB::table('devi')->where('id', $iddevis)->first();
-
+            $devi = DB::table('devi')->where('refdevis', $refdevis)->first();
+    
             $reste = $devi->restant;
-
+    
             $rules = [
-                'iddevis' => 'required',
-                'versement' => 'required|min:1|max:'.$reste,
+                'refdevis' => 'required',
                 'dateVersement' => 'required|after_or_equal:'.date('Y-m-d')
             ];
-
-            $validator = Validator::make(request()->all(), $rules);
-
+    
+            $validator = Validator::make($request->all(), $rules);
+    
             if ($validator->fails()) {
-                $error = $validator->errors();
-                $msg = '';
-                if ($error->has('iddevis')) {
-                    $msg .= 'Le devis est requis<br/>';
-                }
-
-                if ($error->has('dateVersement')) {
-                    $msg .= 'La date de versement doit être égale ou supérieure à la date courante<br/>';
-                }
-
-                if ($error->has('versement')) {
-                    $msg .= 'Le montant du versement est requis et doit être inférieur ou égal au solde restant<br/>';
-                }
-                return redirect()->back()->withErrors($validator)->withInput();
-
+                return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
             }
-
-            if($versement <= $reste){
-
-            $newpayer = $devi->payer + $versement;
-            $newreste = $devi->restant - $versement;
-
-
-            DB::table('histoversement')->insert([
-                'iddevis' => $iddevis,
-                'versement' => $versement,
-                'reste' => $newreste,
-                'total' => $devi->totalpourcentage,
-                'date' => $date,
-                'ancienreste' => $devi->restant,
-                'ancienpayer' => $devi->payer,
-
-            ]);
-
-            DB::table('devi')
-            ->where('id', $iddevis)
-            ->update(['payer' => $newpayer, 'restant' => $newreste]);
-
-            // return response()->json(['success' => 'Formulaire validé avec succès.']);
-
-            return redirect('projet');
-
-            }else{
-                return redirect()->back()->withErrors(['versement' => 'Le montant du versement doit être inférieur ou égal au solde restant'])->withInput();
+            
+            if ($versement <= $reste) {
+    
+                $newpayer = $devi->payer + $versement;
+                $newreste = $devi->restant - $versement;
+                
+                DB::table('histoversement')->insert([
+                    'versement' => $versement,
+                    'reste' => $newreste,
+                    'total' => $devi->totalpourcentage,
+                    'date' => $date,
+                    'refdevis' => $refdevis,
+                    'refpaiement' => $refpaiement,
+                ]);
+    
+                DB::table('devi')
+                    ->where('refdevis', $refdevis)
+                    ->update(['payer' => $newpayer, 'restant' => $newreste]);
+    
+                return response()->json(['status' => 'success', 'message' => 'Formulaire validé avec succès.']);
+    
+            } else {
+                $message = 'Le montant du versement doit être inférieur ou égal au solde restant';
+                return response()->json(['status' => 'error', 'errors' => $message], 422);
             }
-
         }
     }
 
@@ -300,7 +281,7 @@ class ClientController extends Controller
             $html .= '<table style="border:1px solid black; border-collapse:collapse; width:100%;">';
             $html .= '<thead style="border:1px solid black;">
                         <tr>
-                            <th style="border:1px solid black; padding:5px;">Type</th>
+                         
                             <th style="border:1px solid black; padding:5px;">Nom</th>
                             <th style="border:1px solid black; padding:5px;">Unite</th>
                             <th style="border:1px solid black; padding:5px;">quantite</th>
@@ -311,7 +292,7 @@ class ClientController extends Controller
             $html .= '<tbody>';
             foreach ($projetsdetails as $travaux){
                 $html .= '<tr style="border:1px solid black;">
-                            <td style="border:1px solid black; padding:5px;">'. $travaux->type .'</td>
+                           
                             <td style="border:1px solid black; padding:5px;">'. $travaux->nom .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->unite .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->quantite .'</td>
