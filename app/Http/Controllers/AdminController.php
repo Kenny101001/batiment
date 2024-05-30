@@ -124,7 +124,7 @@ class AdminController extends Controller
             $html .= '<thead style="border:1px solid black;">
                         <tr>
 
-                           
+
                             <th style="border:1px solid black; padding:5px;">Nom</th>
                             <th style="border:1px solid black; padding:5px;">Unite</th>
                             <th style="border:1px solid black; padding:5px;">quantite</th>
@@ -135,7 +135,7 @@ class AdminController extends Controller
             $html .= '<tbody>';
             foreach ($projetsdetails as $travaux){
                 $html .= '<tr style="border:1px solid black;">
-                           
+
                             <td style="border:1px solid black; padding:5px;">'. $travaux->nom .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->unite .'</td>
                             <td style="border:1px solid black; padding:5px;">'. $travaux->quantite .'</td>
@@ -164,13 +164,13 @@ class AdminController extends Controller
 
             foreach (DB::select("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'") as $table) {
                 $tableName = $table->tablename;
-                
+
                 // Exclure certaines tables de la liste de suppression
                 if (!in_array($tableName, ['utilisateur', 'finition', 'lieu', 'type'])) {
                     DB::table($tableName)->truncate();
                 }
             }
-            
+
 
         return redirect('indexAdmin');
         }else{
@@ -191,13 +191,13 @@ class AdminController extends Controller
                 $ordre = request()->input('ordre');
                 $nextordre = $ordre == 'desc' ? 'asc' : 'desc';
                 $ordre = $nextordre;
-                
+
                 $typeTravaux = DB::table('travaux')->orderBy($type,$ordre)->get();
 
-            }else{   
+            }else{
                 $typeTravaux = DB::table('travaux')->orderBy('id')->get();
             }
-            
+
 
             return view('admin.typeTravaux', compact('typeTravaux','nextordre'));
 
@@ -217,7 +217,7 @@ class AdminController extends Controller
                 ->selectRaw('unite')
                 ->groupBy(DB::raw('unite'))
                 ->get();
-        
+
 
         // $unites =DB::table('v_travauxmaisonprix')
         //             ->selectRaw('unite')
@@ -484,9 +484,9 @@ class AdminController extends Controller
 
             // dd($iddevisref);
             DB::table('devi')->where('refdevis', $iddevisref)->update([ 'dure' => $dure,'fin' => $fin,'payer' => $payement, 'total' => $total, 'restant' => $reste, 'description' => $description, 'type' => $type , 'totalpourcentage' => $totalpourcentage]);
-    
+
         }
-        
+
         $idtravauxMaison= DB::select("INSERT INTO travauxmaison(idmaison, idtravaux, quantite)
         SELECT distinct maison.id as idmaison,travaux.id as idtravaux , maisonimportationcsv.quantite
         FROM maisonimportationcsv
@@ -508,20 +508,20 @@ class AdminController extends Controller
         group by devi.id, travaux.id, travaux.nom,travaux.unite, maisonimportationcsv.quantite,travaux.prixunitaire
         RETURNING id");
 
-        
+
         $idclient= DB::select("INSERT INTO client(numero)
         SELECT distinct numclient
         FROM devi
         where numclient NOT IN (SELECT numero FROM client)
         group by numclient
-        RETURNING id");   
-        
+        RETURNING id");
+
         $idlieu= DB::select("INSERT INTO lieu(nom)
         SELECT distinct lieu
         FROM devi
         where lieu NOT IN (SELECT nom FROM lieu)
         group by lieu
-        RETURNING id");   
+        RETURNING id");
 
         return redirect('pageCsv');
     }
@@ -590,7 +590,7 @@ class AdminController extends Controller
 
             // if (count($check) > 0) {
             //     return redirect()->back()->withErrors(['exist' => 'Des informations existe déjà dans la base de données']);
-            // }                    
+            // }
 
             foreach ($dataToInsert as $key => $value) {
                 $exist = DB::table('paiementimportationcsv')
@@ -601,6 +601,7 @@ class AdminController extends Controller
                 if ($exist) {
                     unset($dataToInsert[$key]);
                 }
+
             }
 
             DB::table('paiementimportationcsv')->insert($dataToInsert);
@@ -626,7 +627,7 @@ class AdminController extends Controller
                 $sommeVersement = DB::select("SELECT SUM(versement) as sommeversement FROM histoversement where refdevis = '".$devisPaiement[$i]->refdevis."'");
 
                 $devi = DB::select("SELECT * FROM devi WHERE refdevis = '".$devisPaiement[$i]->refdevis."'");
-              
+
                 $reste = $devi[0]->totalpourcentage - $sommeVersement[0]->sommeversement;
 
                 DB::table('devi')->where('refdevis', $devisPaiement[$i]->refdevis)->update(['payer' => $sommeVersement[0]->sommeversement, 'restant' => $reste]);
